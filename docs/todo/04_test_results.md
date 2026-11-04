@@ -1,0 +1,16 @@
+# TODO V1 テスト結果
+- Gitのブランチ・コミット：feature/todo-v1、todo実装
+- Neonブランチ・DB名（接続文字列は書かない）：Neonブランチ　main、DB名 neondb
+- Local URL、実施日時、結果：http://localhost:3000/todo、26-10-28、正常実行
+- Preview URL、Deploymentのソースブランチ、実施日時、結果：ai-drive-project-2026-d1osfpdei-k17un3s-projects.vercel.app、feature/todo-v1、26-10-28、正常実行
+- Production URL、Deploymentのソースブランチ、実施日時、結果：https://vercel.com/k17un3s-projects/ai-drive-project-2026、main、26-10-28、正常実行
+- REQ-01 一覧（0件を含む）：F12の実行結果.png
+- REQ-02 登録（正常、title欠落、空白、101文字）：F12の実行結果.png
+- REQ-03 更新（正常、存在しないID）：F12の実行結果.png
+- REQ-04 削除（正常、存在しないID）：F12の実行結果.png
+- 既存TOPとDB確認：GET /: TOP Page が正常に表示される、GET /api/db-check: { status: "ok" } が正常に返却され
+- 見つかった不具合、原因、修正後の再テスト
+    - 不具合：http://localhost:3000/todo/ アクセス時に Cannot GET /todo/ エラー
+    - 原因：todoRouter.ts において、末尾スラッシュありのパス /todo/ に対するルーティングハンドラが未登録だった
+    - 修正後の再テスト：/todo および /todo/ のいずれの URL からも画面が正常にレンダリングされることを確認
+- 文書の仕様と実装に残る差分：なし
