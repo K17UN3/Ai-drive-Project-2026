@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // --- 既存ルート (影響を与えないよう維持) ---
 app.get('/', (req, res) => {
-  res.send('TOP Page');
+  res.send('index');
 });
 
 app.get('/api/db-check', (req, res) => {
