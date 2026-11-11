@@ -112,11 +112,13 @@
   <h1>AI質問機能</h1>
 
   <section class="qa-form-section">
-    <div class="form-group">
-      <label for="question-input"><strong>質問を入力してください (1〜1000文字):</strong></label><br>
-      <textarea id="question-input" placeholder="質問を入力してください..." disabled></textarea>
-    </div>
-    <button id="submit-btn" disabled>質問を送信</button>
+    <form id="qa-form">
+      <div class="form-group">
+        <label for="question-input"><strong>質問を入力してください (1〜2000文字):</strong></label><br>
+        <textarea id="question-input" placeholder="質問を入力してください..." disabled></textarea>
+      </div>
+      <button id="submit-btn" type="submit" disabled>質問を送信</button>
+    </form>
   </section>
 
   <div id="status-area"></div>
