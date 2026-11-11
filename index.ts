@@ -27,7 +27,8 @@ app.get('/api/db-check', (req, res) => {
 app.use('/', todoRouter);
 
 // --- AI質問機能のルーティング登録 ---
-app.use('/', aiRouter);
+app.use('/ai', aiRouter);       // GET /ai (画面表示)
+app.use('/api/ai', aiRouter);   // POST /api/ai/ask, GET /api/ai/history (API)
 
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);

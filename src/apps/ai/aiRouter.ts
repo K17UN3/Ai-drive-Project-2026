@@ -3,8 +3,9 @@ import { aiController } from './aiController';
 
 export const aiRouter = Router();
 
-// 画面表示ルート
-aiRouter.get('/ai', aiController.renderPage);
+// 画面表示ルート (GET /ai)
+aiRouter.get('/', aiController.renderPage);
 
-// API ルート
-aiRouter.post('/api/v1/ai/ask', aiController.askQuestion);
+// API ルート (POST /api/ai/ask, GET /api/ai/history)
+aiRouter.post('/ask', aiController.askQuestion);
+aiRouter.get('/history', aiController.getHistory);

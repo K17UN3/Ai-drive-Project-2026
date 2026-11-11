@@ -6,7 +6,7 @@
 
 ```
 [ ブラウザ (Front) ]
-       │  ① POST /api/v1/ai/ask (Fetch API / JSON)
+       │  ① POST /api/ai/ask (Fetch API / JSON)
        ▼
 [ Express Server (Router -> Controller -> Service -> Model) ]
        │                      │
@@ -41,14 +41,14 @@ src/
 └── apps/
     ├── todo/                # 既存TODO機能
     └── ai/                  # AI質問機能 (新規追加)
-        ├── aiRouter.ts      # ルーティング定義 (/ai, /api/v1/ai/ask)
+        ├── aiRouter.ts      # ルーティング定義 (/ai, /api/ai/ask)
         ├── aiController.ts  # リクエスト/レスポンス制御・バリデーション・デモ停止判定
         ├── aiService.ts     # Gemini API連動・ビジネスロジック
         └── aiModel.ts       # ai_qa_logs テーブル操作・DBクエリ
 ```
 
 * **`aiRouter.ts` (Router)**
-  * 画面ルート（`GET /ai`）および API エンドポイント（`POST /api/v1/ai/ask`）と Controller メソッドのバインド。
+  * 画面ルート（`GET /ai`）および API エンドポイント（`POST /api/ai/ask`）と Controller メソッドのバインド。
 * **`aiController.ts` (Controller)**
   * 画面レンダリング（`views/ai/index.ejs`）ハンドラーの提供。
   * リクエスト受信時、最優先で**環境変数/デモ停止チェック**を実施（未設定時は 503 を即時返却）。
@@ -100,8 +100,8 @@ TOP画面（`views/index.ejs`）、TODO画面（`views/todo/index.ejs`）、お�
 * **Method**: `GET`
 * **処理**: `views/ai/index.ejs` をレンダリングして返却。
 
-### 2. AI質問送信 (`POST /api/v1/ai/ask`)
-* **URL**: `/api/v1/ai/ask`
+### 2. AI質問送信 (`POST /api/ai/ask`)
+* **URL**: `/api/ai/ask`
 * **Method**: `POST`
 * **Content-Type**: `application/json`
 
@@ -230,7 +230,7 @@ app.get('/api/db-check', (req, res) => { res.json({ status: 'ok' }); });
 
 // 4. 機能別ルーターの登録
 app.use('/', todoRouter); // 既存 TODO ルート (/todo, /api/v1/todos 等)
-app.use('/', aiRouter);   // 新規 AI ルート (/ai, /api/v1/ai/ask)
+app.use('/', aiRouter);   // 新規 AI ルート (/ai, /api/ai/ask)
 
 // 5. 404ハンドラー (未定義ルートへの対処)
 app.use((req, res, next) => {
@@ -299,7 +299,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 | 要件ID | 設計ID (DES-AI) | 設計概要 | 確認・検証方法 |
 | :--- | :--- | :--- | :--- |
 | **REQ-AI-F001** | **DES-AI-01** | `GET /ai` の画面提供および TOP/TODO 画面への AI 質問 UI の組み込み（第3, 4項） | ブラウザで `/`, `/todo`, `/ai` を開き、フォームおよびボタンが表示されるか確認 |
-| **REQ-AI-F002** | **DES-AI-02** | `POST /api/v1/ai/ask` のエンドポイント定義と Gemini SDK による回答取得（第4項） | 有効な質問を送信し、200 OK と回答テキストが画面表示されるか確認 |
+| **REQ-AI-F002** | **DES-AI-02** | `POST /api/ai/ask` のエンドポイント定義と Gemini SDK による回答取得（第4項） | 有効な質問を送信し、200 OK と回答テキストが画面表示されるか確認 |
 | **REQ-AI-F003** | **DES-AI-03** | フロント/バックエンドにおける空文字・1,000文字超の入力検証（第3, 4項） | 空文および1001文字以上のテキストを送信し、AIを呼び出さずに 400/422 エラーが返るか確認 |
 | **REQ-AI-F004** | **DES-AI-04** | Fetch通信中のボタン非活性（disabled）およびローディング表示制御（第3項） | 通信中にボタンが非活性化し「回答生成中...」となるか視覚的に確認 |
 | **REQ-AI-F005** | **DES-AI-05** | API通信障害・例外発生時の捕捉と画面へのエラーメッセージ表示（第4, 6項） | 意図的に無効なAPIキーを設定して送信し、エラーメッセージが画面表示されサーバーがクラッシュしないか確認 |

@@ -42,11 +42,11 @@
 * **作業内容**:
   1. `tsconfig.json` の `"include"` に `"src/**/*"` を追加し、ビルド対象を広げる。
   2. `src/apps/ai/` 配下に `aiRouter.ts` および `aiController.ts` の最小限の骨組みを作成する。
-  3. `GET /ai` (画面表示) と `POST /api/v1/ai/ask` (API) のエンドポイントを仮定義する。
+  3. `GET /ai` (画面表示) と `POST /api/ai/ask` (API) のエンドポイントを仮定義する。
   4. `aiController` の先頭に環境変数 `GEMINI_API_KEY` の存在チェックを追加する（未設定時は即座に HTTP 503 を返却）。
   5. `index.ts` に `express.json({ limit: '10kb' })` を設定し、`aiRouter` をマウントする。
 * **確認方法**:
-  * `.env` の `GEMINI_API_KEY` を未設定の状態で `npm run dev` を実行し、`curl` またはブラウザで `GET /ai` および `POST /api/v1/ai/ask` にリクエストを送信する。
+  * `.env` の `GEMINI_API_KEY` を未設定の状態で `npm run dev` を実行し、`curl` またはブラウザで `GET /ai` および `POST /api/ai/ask` にリクエストを送信する。
   * 既存の `/` (TOP) および `/todo` へアクセスする。
 * **期待結果**:
   * `GEMINI_API_KEY` 未設定時、AI API が 503 Service Unavailable レスポンスを返却すること。
@@ -87,7 +87,7 @@
   2. `aiController.ts` で `req.body.question` の入力型および文字数（トリム後1〜1,000文字）バリデーションを実装する（不正時は 400/422 返却）。
   3. Valid なリクエストに対し、モックの `aiService` を呼び出し、結果受領後にバックグラウンド（非同期 `catch` 付）で `aiModel.saveLog()` を実行して 200 OK を返却する。
 * **確認方法**:
-  * `GEMINI_API_KEY` を有効化し、`POST /api/v1/ai/ask` へ Valid な JSON (`{"question": "テスト"}`) を送信する。
+  * `GEMINI_API_KEY` を有効化し、`POST /api/ai/ask` へ Valid な JSON (`{"question": "テスト"}`) を送信する。
   * 空文字や1,001文字以上の不正 JSON を送信する。
   * DB の `ai_qa_logs` を `SELECT * FROM ai_qa_logs;` で確認する。
 * **期待結果**:
@@ -111,7 +111,7 @@
   3. `AbortController` を用いて 30 秒のタイムアウト制御を実装する。
   4. SDK の自動リトライを無効化（または0回に設定）し、API 障害時やタイムアウト時に例外をキャッチしてドメインエラーを投げるように実装する。
 * **確認方法**:
-  * 正しい `GEMINI_API_KEY` を設定し、`POST /api/v1/ai/ask` に「TODOアプリのコツを教えて」と送信する。
+  * 正しい `GEMINI_API_KEY` を設定し、`POST /api/ai/ask` に「TODOアプリのコツを教えて」と送信する。
   * 意図的に無効な API キーを設定してリクエストを送信する。
 * **期待結果**:
   * 正常送信時、Gemini API から生成されたリアルな日本語回答が 200 OK で返り、`ai_qa_logs` に記録されること。
