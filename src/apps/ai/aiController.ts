@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { aiModel } from './aiModel';
+import { aiService } from './aiService';
 
 export const aiController = {
   // GET /ai - 画面レンダリングハンドラ
   renderPage(req: Request, res: Response) {
-    // デモ停止ガード（APIキー未設定時）
     if (!process.env.GEMINI_API_KEY) {
       return res.status(503).render('ai/index', {
         disabled: true,
@@ -18,9 +18,9 @@ export const aiController = {
     });
   },
 
-  // POST /api/ai/ask - 質問送信エンドポイント（骨組み）
+  // POST /api/ai/ask - 質問送信エンドポイント
   async askQuestion(req: Request, res: Response) {
-    // デモ停止ガード（APIキー未設定時）
+    // 1. 共通デモ停止ガード
     if (!process.env.GEMINI_API_KEY) {
       return res.status(503).json({
         status: 'error',
@@ -30,18 +30,58 @@ export const aiController = {
       });
     }
 
-    // TASK-01 では正常疎通用の仮レスポンスを返却
-    res.status(200).json({
-      status: 'success',
-      data: {
-        message: 'AI質問機能のエンドポイントが準備されました (TASK-01)',
-      },
-    });
+    try {
+      const { question } = req.body || {};
+
+      // 2. 本番用入力検証 (型チェック & 空白トリム & 文字数1~1000制限)
+      if (typeof question !== 'string') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'INVALID_INPUT',
+          message: '質問テキストは文字列で入力してください',
+          details: [],
+        });
+      }
+
+      const trimmedQuestion = question.trim();
+      if (trimmedQuestion.length === 0 || trimmedQuestion.length > 1000) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'VALIDATION_ERROR',
+          message: '質問は1文字以上1000文字以内で入力してください',
+          details: [],
+        });
+      }
+
+      // 3. Service層の呼び出し (現在モック回答)
+      const answerText = await aiService.generateAnswer(trimmedQuestion);
+
+      // 4. DBへ対話ログを非同期保存 (レスポンス遅延やDB障害時でもAI回答疎通を安全に維持)
+      aiModel.saveLog(trimmedQuestion, answerText).catch((err) => {
+        console.error('[AI Log Save Error]:', err);
+      });
+
+      // 5. 201 Created レスポンス返却
+      return res.status(201).json({
+        status: 'success',
+        data: {
+          answer: answerText,
+          askedAt: new Date().toISOString(),
+        },
+      });
+    } catch (err) {
+      console.error('Error in askQuestion:', err);
+      return res.status(500).json({
+        status: 'error',
+        code: 'INTERNAL_ERROR',
+        message: 'AI回答の生成中に予期せぬエラーが発生しました',
+        details: [],
+      });
+    }
   },
 
   // GET /api/ai/history - 履歴取得エンドポイント
   async getHistory(req: Request, res: Response) {
-    // デモ停止ガード（APIキー未設定時）
     if (!process.env.GEMINI_API_KEY) {
       return res.status(503).json({
         status: 'error',
@@ -53,7 +93,7 @@ export const aiController = {
 
     try {
       const items = await aiModel.findRecentLogs(20);
-      res.status(200).json({
+      return res.status(200).json({
         status: 'success',
         data: {
           success: true,
@@ -62,7 +102,7 @@ export const aiController = {
       });
     } catch (err) {
       console.error('Error in getHistory:', err);
-      res.status(500).json({
+      return res.status(500).json({
         status: 'error',
         code: 'INTERNAL_ERROR',
         message: 'データベースエラーが発生しました',
