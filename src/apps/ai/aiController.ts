@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { aiModel } from './aiModel';
-import { aiService } from './aiService';
+import { aiService, AiServiceError } from './aiService';
 
 export const aiController = {
   // GET /ai - 画面レンダリングハンドラ
@@ -53,23 +53,31 @@ export const aiController = {
         });
       }
 
-      // 3. Service層の呼び出し (現在モック回答)
+      // 3. Service層の呼び出し (実Gemini API呼出し)
       const answerText = await aiService.generateAnswer(trimmedQuestion);
 
-      // 4. DBへ対話ログを非同期保存 (レスポンス遅延やDB障害時でもAI回答疎通を安全に維持)
-      aiModel.saveLog(trimmedQuestion, answerText).catch((err) => {
-        console.error('[AI Log Save Error]:', err);
-      });
+      // 4. DBへ対話ログを保存 (保存完了を確認してから 201 を返す)
+      const savedLog = await aiModel.saveLog(trimmedQuestion, answerText);
 
-      // 5. 201 Created レスポンス返却
+      // 5. 保存完了確認後 201 Created レスポンス返却
       return res.status(201).json({
         status: 'success',
         data: {
+          id: savedLog.id,
           answer: answerText,
-          askedAt: new Date().toISOString(),
+          askedAt: savedLog.createdAt,
         },
       });
-    } catch (err) {
+    } catch (err: any) {
+      if (err instanceof AiServiceError) {
+        return res.status(err.statusCode).json({
+          status: 'error',
+          code: err.code,
+          message: err.message,
+          details: [],
+        });
+      }
+
       console.error('Error in askQuestion:', err);
       return res.status(500).json({
         status: 'error',
