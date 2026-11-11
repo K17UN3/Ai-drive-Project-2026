@@ -23,6 +23,11 @@ app.get('/api/db-check', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// --- AI静的画面へのダイレクトルート (GET /ai) ---
+app.get('/ai', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ai', 'index.html'));
+});
+
 // --- TODO機能のルーティング登録 ---
 app.use('/', todoRouter);
 
