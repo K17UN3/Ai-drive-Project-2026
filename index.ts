@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { todoRouter } from './src/apps/todo/todoRouter';
+import { aiRouter } from './src/apps/ai/aiRouter';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,8 +10,8 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// ミドルウェア設定
-app.use(express.json()); // POST の JSON Body パース用
+// ミドルウェア設定 (DoS防止のためボディサイズ制限を10kbに設定)
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- 既存ルート (影響を与えないよう維持) ---
@@ -22,8 +23,17 @@ app.get('/api/db-check', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// --- AI静的画面へのダイレクトルート (GET /ai) ---
+app.get('/ai', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ai', 'index.html'));
+});
+
 // --- TODO機能のルーティング登録 ---
 app.use('/', todoRouter);
+
+// --- AI質問機能のルーティング登録 ---
+app.use('/ai', aiRouter);       // GET /ai (画面表示)
+app.use('/api/ai', aiRouter);   // POST /api/ai/ask, GET /api/ai/history (API)
 
 app.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
