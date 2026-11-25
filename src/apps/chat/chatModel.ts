@@ -52,7 +52,7 @@ const formatMessage = (row: DbMessageRow): ChatMessageItem => ({
 export const chatModel = {
   /**
    * 空きルームへ参加（席確保）＋最新20件の履歴取得
-   * 全3ルーム行ロック(FOR UPDATE)により、複数インスタンス同時アクセス時でも定員5名を厳守する
+   * 全2ルーム行ロック(FOR UPDATE)により、複数インスタンス同時アクセス時でも定員5名を厳守する
    */
   async joinAvailableRoom(): Promise<JoinRoomResult> {
     const client = await pool.connect();
@@ -186,7 +186,7 @@ export const chatModel = {
           FROM chat_messages
           WHERE room_id = $1 AND id > $2
           ORDER BY id ASC
-          LIMIT 50;
+          LIMIT 30;
           `,
           [room.room_id, afterId]
         );
@@ -224,7 +224,7 @@ export const chatModel = {
   },
 
   /**
-   * メッセージの保存と1ルーム最大50件の維持（席の有効性検証込み）
+   * メッセージの保存と1ルーム最大30件の維持（席の有効性検証込み）
    */
   async postMessageWithSeatCheck(
     seatToken: string,
@@ -268,7 +268,7 @@ export const chatModel = {
         [roomId, userName, comment]
       );
 
-      // 4. 同一ルームの保存件数を最新50件までに制限（超過した古い行を削除）
+      // 4. 同一ルームの保存件数を最新30件までに制限（超過した古い行を削除）
       await client.query(
         `
         DELETE FROM chat_messages
@@ -277,7 +277,7 @@ export const chatModel = {
             SELECT id FROM chat_messages
             WHERE room_id = $1
             ORDER BY id DESC
-            LIMIT 50
+            LIMIT 30
           );
         `,
         [roomId]

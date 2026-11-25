@@ -1,7 +1,7 @@
 -- チャット機能用テーブル定義 (Neon / PostgreSQL)
 -- 既存の TOP / TODO / AI テーブルとは独立した構成
 
--- 1. ルームマスターテーブル（固定3ルーム・席確保時の行ロック対象）
+-- 1. ルームマスターテーブル（固定2ルーム・席確保時の行ロック対象）
 CREATE TABLE IF NOT EXISTS chat_rooms (
   id INTEGER PRIMARY KEY,
   name VARCHAR(30) NOT NULL,
@@ -12,8 +12,7 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
 INSERT INTO chat_rooms (id, name, max_capacity)
 VALUES
   (1, 'Room 1', 5),
-  (2, 'Room 2', 5),
-  (3, 'Room 3', 5)
+  (2, 'Room 2', 5)
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. アクティブ参加席管理テーブル（接続単位・45秒Heartbeatタイムアウト）
@@ -27,7 +26,7 @@ CREATE TABLE IF NOT EXISTS chat_seats (
 CREATE INDEX IF NOT EXISTS idx_chat_seats_room_last_seen
   ON chat_seats (room_id, last_seen_at);
 
--- 3. チャットメッセージ履歴テーブル（1ルーム最大50件保持・最新20件表示）
+-- 3. チャットメッセージ履歴テーブル（1ルーム最大30件保持・最新20件表示）
 CREATE TABLE IF NOT EXISTS chat_messages (
   id BIGSERIAL PRIMARY KEY,
   room_id INTEGER NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
