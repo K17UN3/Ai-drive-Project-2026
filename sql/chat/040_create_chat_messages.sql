@@ -2,6 +2,7 @@
 -- 既存の TOP / TODO / AI テーブルとは独立した構成
 
 -- 1. ルームマスターテーブル（固定2ルーム・席確保時の行ロック対象）
+-- 1. ルームマスターテーブル（固定1ルーム・席確保時の行ロック対象）
 CREATE TABLE IF NOT EXISTS chat_rooms (
   id INTEGER PRIMARY KEY,
   name VARCHAR(30) NOT NULL,
@@ -11,8 +12,7 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
 -- 初期ルームデータの投入（冪等実行可能）
 INSERT INTO chat_rooms (id, name, max_capacity)
 VALUES
-  (1, 'Room 1', 5),
-  (2, 'Room 2', 5)
+  (1, 'Room 1', 5)
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. アクティブ参加席管理テーブル（接続単位・45秒Heartbeatタイムアウト）

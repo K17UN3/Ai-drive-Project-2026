@@ -52,7 +52,7 @@ const formatMessage = (row: DbMessageRow): ChatMessageItem => ({
 export const chatModel = {
   /**
    * 空きルームへ参加（席確保）＋最新20件の履歴取得
-   * 全2ルーム行ロック(FOR UPDATE)により、複数インスタンス同時アクセス時でも定員5名を厳守する
+   * ルーム行ロック(FOR UPDATE)により、複数インスタンス同時アクセス時でも定員5名を厳守する
    */
   async joinAvailableRoom(): Promise<JoinRoomResult> {
     const client = await pool.connect();
