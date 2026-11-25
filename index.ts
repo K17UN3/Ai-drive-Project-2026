@@ -1,8 +1,11 @@
 import express from 'express';
 import path from 'path';
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 import { todoRouter } from './src/apps/todo/todoRouter';
 import { aiRouter } from './src/apps/ai/aiRouter';
 import { aiV2Router } from './src/apps/ai/v2/aiV2Router';
+import { chatPageRouter, chatApiRouter } from './src/apps/chat/chatRouter';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,6 +55,21 @@ app.use('/api/ai', aiRouter);   // POST /api/ai/ask, GET /api/ai/history (API)
 // --- AI質問機能 V2 APIルーティング登録 ---
 app.use('/api/ai/v2', aiV2Router);
 
-app.listen(PORT, () => {
+// --- チャット機能 画面ルーティング登録 ---
+app.use('/chat', chatPageRouter);
+app.use('/api/chat', chatApiRouter);
+
+// --- HTTPサーバー & Socket.IO 初期化 (既存の app.listen を置換) ---
+const httpServer = http.createServer(app);
+const io = new SocketIOServer(httpServer);
+
+io.on('connection', (socket) => {
+  console.log(`[Socket.IO] client connected: ${socket.id}`);
+  socket.on('disconnect', (reason) => {
+    console.log(`[Socket.IO] client disconnected: ${socket.id} (${reason})`);
+  });
+});
+
+httpServer.listen(PORT, () => {
   console.log(`Server started on http://localhost:${PORT}`);
 });
